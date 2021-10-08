@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+python-multipart
+h2o
+pandas
+loguru
+typer
