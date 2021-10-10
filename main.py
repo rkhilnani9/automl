@@ -3,7 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from typer import Typer
 
 from auto_ml.main import router as auto_ml_router
-from auto_ml.automl import train_model
+from auto_ml.train import train_model
+from auto_ml.validate import validate
 
 
 app = FastAPI()
@@ -21,8 +22,13 @@ cli = Typer()
 
 
 @cli.command()
-def validate(target_variable, id_column, data):
+def train(target_variable, id_column, data):
     return train_model(data, target_variable, id_column)
+
+
+@cli.command()
+def validate(model_path, id_column, data):
+    return validate(data, model_path, id_column)
 
 
 if __name__ == "__main__":
