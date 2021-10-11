@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from typer import Typer
 
 from auto_ml.main import router as auto_ml_router
-from auto_ml.train import train_model
+from auto_ml.train import train
 from auto_ml.validate import validate
 
 
@@ -23,7 +23,7 @@ cli = Typer()
 
 @cli.command()
 def train(target_variable, id_column, data):
-    return train_model(data, target_variable, id_column)
+    return train(data, target_variable, id_column)
 
 
 @cli.command()
