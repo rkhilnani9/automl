@@ -18,12 +18,13 @@ router = APIRouter()
 async def train(
     target_variable: str = Form(...),
     id_column: Optional[str] = Form(...),
+    return_metrics: Optional[bool] = Form(...),
     dataframe: UploadFile = File(...),
 ):
     data = pd.read_csv(dataframe.file)
     logger.info(dataframe.filename)
-    model_path = train_model(data, target_variable, id_column)
-    return {"model_path": model_path}
+    model_path, metrics = train_model(data, target_variable, id_column, return_metrics)
+    return {"model_path": model_path, "metrics": metrics}
 
 
 @router.post("/validate/")

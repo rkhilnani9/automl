@@ -6,7 +6,7 @@ from h2o.automl import H2OAutoML
 h2o.init(max_mem_size="16G")
 
 
-def train_model(data, target_variable, id_column=None):
+def train_model(data, target_variable, id_column=None, return_metrics=False):
     # Split into train and validation
     h2o_df = h2o.H2OFrame(data)
     splits = h2o_df.split_frame(ratios=[0.8], seed=1)
@@ -28,7 +28,13 @@ def train_model(data, target_variable, id_column=None):
     model_path = f"models/model_{now}"
     h2o.save_model(aml.leader, path=model_path)
 
-    return model_path
+    metrics = {}
+    # Return metrics
+    if return_metrics:
+        lb = aml.leaderboard.as_data_frame(use_pandas=True)
+        metrics = lb.to_dict(orient="records")[0]
+
+    return model_path, metrics
 
     # # Get metrics of best model
     # lb = aml.leaderboard.as_data_frame(use_pandas=True)
