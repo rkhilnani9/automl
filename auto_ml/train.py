@@ -1,6 +1,5 @@
 import h2o
 
-from datetime import datetime
 from h2o.automl import H2OAutoML
 
 h2o.init(max_mem_size="16G")

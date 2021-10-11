@@ -1,8 +1,5 @@
 from fastapi import APIRouter, Form, File, UploadFile
-from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
 from typing import Optional
-from io import BytesIO, StringIO
 from loguru import logger
 
 from auto_ml.train import train
