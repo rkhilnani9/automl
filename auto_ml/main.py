@@ -1,26 +1,19 @@
-from fastapi import APIRouter, Form, File, UploadFile
-from typing import Optional
+from fastapi import APIRouter, Request
 from loguru import logger
-
 from auto_ml.train import train
 from auto_ml.validate import validate
-
 import pandas as pd
-
 
 router = APIRouter()
 
 
 @router.post("/train/")
-async def train_model(
-    target_variable: str = Form(...),
-    id_column: Optional[str] = Form(...),
-    return_metrics: Optional[bool] = Form(...),
-    dataframe: UploadFile = File(...),
-):
-
-    data = pd.read_csv(dataframe.file)
-    logger.info(dataframe.filename)
+async def train_model(input: Request):
+    input = await input.json()
+    target_variable = input["target_variable"]
+    id_column = input["id_column"]
+    return_metrics = input["return_metrics"]
+    data = pd.DataFrame(input["data"])
     model_path, metrics = train(data, target_variable, id_column)
     if return_metrics:
         return {"model_path": model_path, "metrics": metrics}
@@ -28,12 +21,11 @@ async def train_model(
 
 
 @router.post("/validate/")
-def validate_performance(
-    dataframe: UploadFile = File(...),
-    model_path: str = Form(...),
-    id_column: Optional[str] = Form(...)
-):
-    data = pd.read_csv(dataframe.file)
-    logger.info(dataframe.filename)
+async def validate_performance(input: Request):
+    input = await input.json()
+    data = input["data"]
+    model_path = input["model_path"]
+    id_column = input["id_column"]
+    data = pd.DataFrame(input["data"])
     predictions = validate(data, model_path, id_column)
     return {"predictions": predictions.to_dict(orient="records")}
