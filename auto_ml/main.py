@@ -3,7 +3,7 @@ from loguru import logger
 from auto_ml.train import train
 from auto_ml.validate import validate
 import pandas as pd
-
+import json
 router = APIRouter()
 
 
@@ -26,6 +26,6 @@ async def validate_performance(input: Request):
     data = input["data"]
     model_path = input["model_path"]
     id_column = input["id_column"]
-    data = pd.DataFrame(input["data"])
+    data = pd.DataFrame(data)
     predictions = validate(data, model_path, id_column)
     return {"predictions": predictions.to_dict(orient="records")}
