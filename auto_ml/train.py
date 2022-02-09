@@ -8,6 +8,11 @@ h2o.init(max_mem_size="16G")
 def train(data, target_variable, id_column=None):
     # Split into train and validation
     h2o_df = h2o.H2OFrame(data)
+
+    # Classification is supported for upto 5 classes
+    if h2o_df[target_variable].unique().shape[0] <= 5:
+        h2o_df[target_variable] = h2o_df[target_variable].asfactor()
+
     splits = h2o_df.split_frame(ratios=[0.8], seed=1)
     train, test = splits[0], splits[1]
 

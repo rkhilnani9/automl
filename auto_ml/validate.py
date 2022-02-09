@@ -18,4 +18,7 @@ def validate(data, model_path, id_column=None):
 
     predictions = model.predict(h2o_df)
 
-    return predictions.as_data_frame(use_pandas=True)
+    pred_df = predictions.as_data_frame(use_pandas=True)
+    pred_df = pred_df[["predict"]]
+
+    return pred_df
