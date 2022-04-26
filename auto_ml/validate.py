@@ -1,24 +1,21 @@
-import h2o
+import pickle
 import pandas as pd
+from loguru import logger
 
-h2o.init(max_mem_size="16G")
+from auto_ml.train_utils import preprocess_data
 
 
 def validate(data, model_path, id_column=None):
-    print(model_path)
-    model = h2o.load_model(model_path)
+    logger.info(model_path)
+    model = pickle.load(open(f"{model_path}.pkl", "rb"))
+
+    df = preprocess_data(data)
 
     if id_column:
-        data.drop(id_column, axis=1, inplace=True)
+        df.drop(id_column, axis=1, inplace=True)
 
-    h2o_df = h2o.H2OFrame(data)
+    predictions = model.predict(df.values)
 
-    # perf = model.model_performance(h2o_df)
-    # print(perf)
+    predictions = [int(pred) for pred in predictions]
 
-    predictions = model.predict(h2o_df)
-
-    pred_df = predictions.as_data_frame(use_pandas=True)
-    pred_df = pred_df[["predict"]]
-
-    return pred_df
+    return list(predictions)

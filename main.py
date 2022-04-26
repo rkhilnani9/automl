@@ -1,3 +1,6 @@
+import h2o
+from h2o.automl import H2OAutoML
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from typer import Typer
@@ -5,6 +8,9 @@ from typer import Typer
 from auto_ml.main import router as auto_ml_router
 from auto_ml.train import train
 from auto_ml.validate import validate
+
+
+h2o.init(max_mem_size="16G")
 
 
 app = FastAPI()

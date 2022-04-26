@@ -28,4 +28,4 @@ async def validate_performance(input: Request):
     id_column = input["id_column"]
     data = pd.DataFrame(data)
     predictions = validate(data, model_path, id_column)
-    return {"predictions": predictions.to_dict(orient="records")}
+    return {"predictions": predictions}

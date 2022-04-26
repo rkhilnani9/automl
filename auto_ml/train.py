@@ -1,38 +1,53 @@
-import h2o
+import datetime
+import pickle
+import xgboost as xgb
 
-from h2o.automl import H2OAutoML
-
-h2o.init(max_mem_size="16G")
+from sklearn.model_selection import train_test_split
+from auto_ml.train_utils import get_best_hyper_params, preprocess_data
 
 
 def train(data, target_variable, id_column=None):
-    # Split into train and validation
-    h2o_df = h2o.H2OFrame(data)
+    problem, hyper_params, metrics = get_best_hyper_params(
+        data, target_variable, id_column
+    )
 
-    # Classification is supported for upto 5 classes
-    if h2o_df[target_variable].unique().shape[0] <= 5:
-        h2o_df[target_variable] = h2o_df[target_variable].asfactor()
+    print(hyper_params["ntrees"]["actual"], hyper_params["learn_rate"]["actual"], hyper_params["max_depth"]["actual"], hyper_params["sample_rate"]["actual"])
 
-    splits = h2o_df.split_frame(ratios=[0.8], seed=1)
-    train, test = splits[0], splits[1]
+    if problem == "classification":
+        model = xgb.XGBClassifier(
+            n_estimators=hyper_params["ntrees"]["actual"],
+            learning_rate=hyper_params["learn_rate"]["actual"],
+            max_depth=hyper_params["max_depth"]["actual"],
+            subsample=hyper_params["sample_rate"]["actual"],
+        )
+    else:
+        model = xgb.XGBRegressor(
+            n_estimators=hyper_params["ntrees"]["actual"],
+            learning_rate=hyper_params["learn_rate"]["actual"],
+            max_depth=hyper_params["max_depth"]["actual"],
+            subsample=hyper_params["sample_rate"]["actual"],
+        )
 
-    # Split into x and y
-    y = target_variable
-    x = h2o_df.columns
-    x.remove(y)
+    df = preprocess_data(data)
+
     if id_column:
-        x.remove(id_column)
+        df.drop(id_column, axis=1, inplace=True)
 
-    # Train model
-    aml = H2OAutoML(max_runtime_secs=30, seed=1)
-    aml.train(x=x, y=y, training_frame=train)
+    y = df[target_variable].values
+    X = df.drop(target_variable, axis=1).values
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+    # Train sklearn model
+    model.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=False)
 
     # Save model
-    save_path = "../models"
-    model_path = h2o.save_model(model=aml.leader, path=save_path, force=True)
+    model_path = f"models/{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
 
-    # Return metrics
-    lb = aml.leaderboard.as_data_frame(use_pandas=True)
-    metrics = lb.to_dict(orient="records")[0]
+    # Model for validating
+    pickle.dump(model, open(f"{model_path}.pkl", "wb"))
+
+    # Model for deployment
+    model.save_model(model_path)
 
     return model_path, metrics

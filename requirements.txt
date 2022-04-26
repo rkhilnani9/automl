@@ -5,3 +5,6 @@ h2o
 pandas
 loguru
 typer
+scikit-learn==0.20.0
+xgboost==0.90
+sagemaker
